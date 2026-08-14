@@ -1,0 +1,59 @@
+# =========================================================================
+# VIKASIT NAGPUR - MASTER .GITIGNORE (Flutter + React Web + OS/IDE)
+# =========================================================================
+
+# --- JavaScript / React / Web ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Flutter / Dart ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.lock
+
+# --- Android ---
+**/android/.gradle/
+**/android/local.properties
+**/android/**/generated/
+**/android/app/build/
+**/android/captures/
+*.apk
+*.aab
+
+# --- iOS ---
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.framework
+**/ios/**/GeneratedPluginRegistrant.*
+
+# --- IDEs & Editors ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# --- Operating System Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
