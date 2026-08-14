@@ -21,7 +21,7 @@ class AppTheme {
         titleTextStyle: AppTypography.titleLarge,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceCardDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -55,7 +55,7 @@ class AppTheme {
         titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimaryLight),
         iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceCardLight,
         elevation: 2,
         shadowColor: const Color(0x0F000000),

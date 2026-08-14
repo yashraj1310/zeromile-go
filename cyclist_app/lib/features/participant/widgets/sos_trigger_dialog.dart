@@ -4,7 +4,14 @@ import '../../../core/models/domain_models.dart';
 import '../../../core/services/mock_data_service.dart';
 
 class SosTriggerDialog extends StatefulWidget {
-  const SosTriggerDialog({super.key});
+  final String? activeSubGroupName;
+  final bool isGroupLeaderAssigned;
+
+  const SosTriggerDialog({
+    super.key,
+    this.activeSubGroupName,
+    this.isGroupLeaderAssigned = true,
+  });
 
   @override
   State<SosTriggerDialog> createState() => _SosTriggerDialogState();
@@ -27,7 +34,7 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
     final activeGroup = service.activeSubGroup;
 
     return Dialog(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: AppColors.bgPrimaryDark,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: const BorderSide(color: AppColors.sosRed, width: 1.5),
@@ -43,7 +50,7 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: const BoxDecoration(
-                    color: AppColors.sosRedGlass,
+                    color: Color(0x33FF1744),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.warning_amber_rounded, color: AppColors.sosRed, size: 28),
@@ -58,8 +65,8 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.sosRed),
                       ),
                       Text(
-                        'Live GPS coordinates will be sent instantly',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        'Real-time GPS Location Included',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondaryDark),
                       ),
                     ],
                   ),
@@ -68,24 +75,30 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
             ),
             const SizedBox(height: 16),
 
-            // Context-Aware Routing Note
+            // Dynamic Context Routing Banner
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
+                color: activeGroup != null ? AppColors.domainCycling.withOpacity(0.1) : AppColors.sosRed.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.borderSubtle),
+                border: Border.all(
+                  color: activeGroup != null ? AppColors.domainCycling.withOpacity(0.3) : AppColors.sosRed.withOpacity(0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.route, size: 16, color: AppColors.domainCycling),
+                  Icon(
+                    activeGroup != null ? Icons.military_tech_rounded : Icons.admin_panel_settings_rounded,
+                    size: 16,
+                    color: activeGroup != null ? AppColors.domainCycling : AppColors.sosRed,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       activeGroup != null
-                          ? 'Routing directly to Group Leader: ${activeGroup.leaderName} (${activeGroup.name})'
-                          : 'No active sub-group. Routing directly to SuperAdmin Triage Command.',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textPrimary),
+                          ? 'Routing to Group Leader: ${activeGroup.leaderName} (${activeGroup.name})'
+                          : 'General Member: Routing directly to Domain SuperAdmin Command',
+                      style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -93,69 +106,90 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Select Emergency Type:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+            const Text(
+              'Select Emergency Nature:',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
             const SizedBox(height: 8),
 
-            // Emergency Type Selector
-            Row(
+            Wrap(
+              spacing: 8,
               children: [
-                _emergencyTypeChip(SosEmergencyType.medical, '🚑 Medical', AppColors.sosRed),
-                const SizedBox(width: 8),
-                _emergencyTypeChip(SosEmergencyType.breakdown, '🛠️ Breakdown', AppColors.warningAmber),
-                const SizedBox(width: 8),
-                _emergencyTypeChip(SosEmergencyType.threat, '⚠️ Threat', AppColors.policeBlue),
+                _typeChip(SosEmergencyType.medical, '🚑 Medical Help', Colors.redAccent),
+                _typeChip(SosEmergencyType.breakdown, '🛠️ Breakdown', Colors.amberAccent),
+                _typeChip(SosEmergencyType.threat, '⚠️ Threat / Safety', Colors.orangeAccent),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
             TextField(
               controller: _noteController,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              maxLines: 2,
               decoration: InputDecoration(
-                hintText: 'Brief note (e.g. Heatstroke at Km 5, crash, flat tyre)',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                hintText: 'Brief description (e.g., severe cramps at Km 4, need water/medic)',
+                hintStyle: const TextStyle(color: AppColors.textMutedDark, fontSize: 11),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
+                fillColor: AppColors.surfaceCardDark,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.sosRed,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: _isSubmitting
-                  ? null
-                  : () {
-                      setState(() => _isSubmitting = true);
-                      service.triggerSos(
-                        type: _selectedType,
-                        lat: 21.1458,
-                        lng: 79.0882,
-                        note: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
-                      );
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: AppColors.sosRed,
-                          content: Text(
-                            activeGroup != null
-                                ? '🚨 SOS Alert broadcasted to Leader: ${activeGroup.leaderName}!'
-                                : '🚨 SOS Alert broadcasted to SuperAdmin Command!',
-                          ),
-                        ),
-                      );
-                    },
-              child: const Text('🚨 BROADCAST SOS NOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 12)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.sosRed,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: _isSubmitting
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.send_rounded, size: 16),
+                    label: Text(
+                      _isSubmitting ? 'TRANSMITTING...' : 'TRANSMIT SOS',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                    onPressed: _isSubmitting
+                        ? null
+                        : () async {
+                            setState(() => _isSubmitting = true);
+                            await Future.delayed(const Duration(milliseconds: 600));
+                            service.triggerSos(
+                              type: _selectedType,
+                              lat: 21.1458,
+                              lng: 79.0882,
+                              note: _noteController.text.trim(),
+                            );
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.sosRed,
+                                  content: Text(
+                                    activeGroup != null
+                                        ? '🚨 SOS Transmitted to Leader ${activeGroup.leaderName}!'
+                                        : '🚨 SOS Transmitted to SuperAdmin Command Queue!',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -163,33 +197,17 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
     );
   }
 
-  Widget _emergencyTypeChip(SosEmergencyType type, String label, Color accent) {
+  Widget _typeChip(SosEmergencyType type, String label, Color accent) {
     final isSelected = _selectedType == type;
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() => _selectedType = type),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? accent.withOpacity(0.2) : AppColors.surfaceCard,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected ? accent : AppColors.borderSubtle,
-              width: isSelected ? 1.5 : 1.0,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? accent : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ),
-      ),
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(fontSize: 11, color: isSelected ? Colors.black : Colors.white, fontWeight: FontWeight.bold)),
+      selected: isSelected,
+      selectedColor: accent,
+      backgroundColor: AppColors.surfaceCardDark,
+      side: BorderSide(color: isSelected ? accent : AppColors.borderSubtleDark),
+      onSelected: (val) {
+        if (val) setState(() => _selectedType = type);
+      },
     );
   }
 }

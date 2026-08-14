@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/mock_data_service.dart';
 import 'features/admin/screens/superadmin_console_screen.dart';
+import 'features/auth/screens/auth_screen.dart';
 import 'features/developer/screens/developer_panel_screen.dart';
 import 'features/leader/screens/group_leader_hub_screen.dart';
 import 'features/participant/screens/group_creation_request_screen.dart';
@@ -31,16 +32,17 @@ class VikasitNagpurApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: service.themeMode,
-          initialRoute: '/home',
+          initialRoute: '/login',
           routes: {
-            '/': (context) => const UserHomeScreen(),
+            '/': (context) => const AuthScreen(),
+            '/login': (context) => const AuthScreen(),
             '/home': (context) => const UserHomeScreen(),
             '/profile': (context) => const UserProfileScreen(),
             '/groups': (context) => const GroupsManagementScreen(),
             '/request-group': (context) => const GroupCreationRequestScreen(),
             '/leader': (context) => const GroupLeaderHubScreen(),
-            '/police': (context) => const PoliceDashboardScreen(),
             '/admin': (context) => const SuperadminConsoleScreen(),
+            '/police': (context) => const PoliceDashboardScreen(),
             '/dev-panel': (context) => const DeveloperPanelScreen(),
           },
         );
