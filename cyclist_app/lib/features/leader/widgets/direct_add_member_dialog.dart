@@ -23,45 +23,72 @@ class _DirectAddMemberDialogState extends State<DirectAddMemberDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: const Color(0xFF0F172A),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderSubtle),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: AppColors.domainCycling.withOpacity(0.5), width: 1.5),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                const Icon(Icons.person_add_rounded, color: AppColors.domainCycling, size: 22),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.domainCycling.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person_add_rounded, color: AppColors.domainCycling, size: 20),
+                ),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'DIRECT ADD MEMBER',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DIRECT ADD TEAM MEMBER',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
+                      ),
+                      Text(
+                        'Instant phone enrollment tool',
+                        style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Adding to: ${widget.groupName}\n(Note: Automatically cascades and enrolls them into the domain General Group if not already present).',
-              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-            ),
             const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: Text(
+                '📍 Contingent: ${widget.groupName}\nℹ️ Auto-cascades and enrolls them into the domain General Group if not present.',
+                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary, height: 1.3),
+              ),
+            ),
+            const SizedBox(height: 16),
 
             TextField(
               controller: _nameController,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
               decoration: InputDecoration(
                 hintText: 'Member Full Name (e.g. Anand Shinde)',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColors.borderSubtle),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -69,35 +96,42 @@ class _DirectAddMemberDialogState extends State<DirectAddMemberDialog> {
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
               decoration: InputDecoration(
                 hintText: 'Mobile Number (+91 98XXXXXXXX)',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColors.borderSubtle),
+                ),
               ),
             ),
             const SizedBox(height: 18),
 
-            ElevatedButton(
+            ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.domainCycling,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 4,
+                shadowColor: AppColors.domainCycling.withOpacity(0.3),
               ),
+              icon: const Icon(Icons.check_circle_rounded, size: 16),
+              label: const Text('+ ENROLL MEMBER TO ROSTER', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5)),
               onPressed: () {
                 if (_phoneController.text.trim().isNotEmpty) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
+                      backgroundColor: AppColors.domainCycling,
                       content: Text('✓ Member ${_phoneController.text.trim()} added and auto-cascaded to General Group!'),
                     ),
                   );
                 }
               },
-              child: const Text('+ ADD MEMBER TO ROSTER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           ],
         ),

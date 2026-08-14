@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
     "name": "vikasit_nagpur_app",
     "short_name": "vikasit_nagpur_app",
+=======
+    "name": "cyclist_app",
+    "short_name": "cyclist_app",
+>>>>>>> 632d6b05fec0340f601089a4c8f1cc42f891d2ec
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -5,12 +5,20 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+<<<<<<< HEAD
+=======
+
+>>>>>>> 632d6b05fec0340f601089a4c8f1cc42f891d2ec
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+<<<<<<< HEAD
+=======
+
+>>>>>>> 632d6b05fec0340f601089a4c8f1cc42f891d2ec
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

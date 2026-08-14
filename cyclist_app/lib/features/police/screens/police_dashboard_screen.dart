@@ -32,12 +32,33 @@ class _PoliceDashboardScreenState extends State<PoliceDashboardScreen> {
           backgroundColor: AppColors.bgPrimary,
           drawer: const UniversalNavDrawer(),
           appBar: AppBar(
-            backgroundColor: AppColors.bgPrimary,
-            title: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            backgroundColor: const Color(0xFF0F172A),
+            elevation: 0,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('TRAFFIC POLICE COMMAND CENTER', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text('Nagpur City Traffic Control • Green Corridor Ops', style: TextStyle(fontSize: 10, color: AppColors.policeBlue)),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('TRAFFIC POLICE COMMAND', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                    Text('Nagpur City Traffic Control • Green Corridor Ops', style: TextStyle(fontSize: 10, color: AppColors.policeBlue, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.policeBlue.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.policeBlue.withOpacity(0.4)),
+                  ),
+                  child: const Row(
+                    children: [
+                      CircleAvatar(radius: 3, backgroundColor: AppColors.policeBlue),
+                      SizedBox(width: 4),
+                      Text('ACTIVE CORRIDOR', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.policeBlue)),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -46,20 +67,27 @@ class _PoliceDashboardScreenState extends State<PoliceDashboardScreen> {
             children: [
               // 1. Critical Operational Scope Banner (SOS IS NOT SENT TO POLICE)
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0x332979FF),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0x1F2979FF),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.policeBlue.withOpacity(0.5)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.policeBlue.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.shield_rounded, color: AppColors.policeBlue, size: 20),
-                    SizedBox(width: 10),
+                    Icon(Icons.shield_rounded, color: AppColors.policeBlue, size: 22),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'ℹ️ POLICE OPERATIONAL SCOPE: Traffic regulation, green corridors & junction clearances. (Participant SOS emergencies are isolated and handled by Event Medical Dispatch & SuperAdmin triage).',
-                        style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3),
+                        style: TextStyle(fontSize: 11, color: Colors.white, height: 1.35, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],

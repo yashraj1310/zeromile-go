@@ -3,8 +3,8 @@ import '../constants/app_colors.dart';
 import '../models/domain_models.dart';
 import '../services/mock_data_service.dart';
 
-/// Screen 3: Universal Navigation Drawer with Multi-Tenant Domain Switcher
-/// Strictly adhering to PROJECT_PLAN.md with ultra-elegant glassmorphism.
+/// Screen 3: Universal Navigation Drawer & Multi-Tenant Event Domain Switcher
+/// Strictly adhering to PROJECT_PLAN.md Section 2 (Screen 3)
 class UniversalNavDrawer extends StatelessWidget {
   const UniversalNavDrawer({super.key});
 
@@ -20,429 +20,381 @@ class UniversalNavDrawer extends StatelessWidget {
 
         return Drawer(
           backgroundColor: isDark ? AppColors.bgPrimaryDark : AppColors.bgPrimaryLight,
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 1. Current Domain Header with Glowing Icon
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
-                      ),
+          child: Column(
+            children: [
+              // 1. Drawer Header (Multi-Tenant Domain Header & User Info)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(top: 50, bottom: 20, left: 20, right: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [const Color(0xFFE2E8F0), const Color(0xFFCBD5E1)],
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.domainCycling.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.domainCycling.withValues(alpha: 0.3),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Domain Badge & Close Icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _getDomainColor(currentDomain.type).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _getDomainColor(currentDomain.type).withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_getDomainIcon(currentDomain.type), style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 6),
+                              Text(
+                                currentDomain.name.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: _getDomainColor(currentDomain.type),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Icon(
-                          _getDomainIcon(currentDomain.type),
-                          color: AppColors.domainCycling,
-                          size: 22,
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 20,
+                            color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
+                          ),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              currentDomain.name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                                letterSpacing: 0.3,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // User Identity Row
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/profile');
+                      },
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: AppColors.domainCycling,
+                            child: const Text('RS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 13)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.domainCycling,
-                                    shape: BoxShape.circle,
-                                  ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Rajesh Sharma',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.verified, size: 14, color: AppColors.domainCycling),
+                                  ],
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(height: 2),
                                 Text(
-                                  '${currentDomain.type.name.toUpperCase()} DOMAIN',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.domainCycling,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
+                                  '+91 98230-12345 • Tap for Pass >',
+                                  style: TextStyle(fontSize: 11, color: isDark ? AppColors.textMuted : AppColors.textSecondaryLight),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                          size: 20,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
 
-                // 2. Participant Profile Quick Header
-                InkWell(
+              // 2. Navigation Links List
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  children: [
+                    _navItem(
+                      context,
+                      icon: Icons.map_outlined,
+                      title: 'Home Dashboard',
+                      subtitle: 'Live Route, Checkpoints & Map',
+                      isDark: isDark,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushReplacementNamed(context, '/home');
+                      },
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.groups_outlined,
+                      title: 'My Sub-Groups',
+                      subtitle: 'Manage Contingents (${service.joinedSubGroupIds.length}/3)',
+                      isDark: isDark,
+                      badge: '${service.joinedSubGroupIds.length}/3',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/groups');
+                      },
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.qr_code_2_rounded,
+                      title: 'My Rally Pass & Links',
+                      subtitle: 'QR Pass, Emergency Info & Share',
+                      isDark: isDark,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/profile');
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+                    Divider(color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight),
+                    const SizedBox(height: 8),
+
+                    // DEMO ROLE SWITCHER
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12, bottom: 8),
+                      child: Text(
+                        'DEMO ROLE VIEWS:',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColors.textMuted : AppColors.textSecondaryLight,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.hub_outlined,
+                      title: 'Group Leader Hub',
+                      subtitle: 'VNIT Riders • SOS Triage & Roster',
+                      isDark: isDark,
+                      accent: AppColors.domainMarathon,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/leader');
+                      },
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.local_police_outlined,
+                      title: 'Traffic Police Command',
+                      subtitle: 'Live Road Closures & Corridors',
+                      isDark: isDark,
+                      accent: AppColors.policeBlue,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/police');
+                      },
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: 'SuperAdmin Console',
+                      subtitle: 'Domain Governance & Live Map',
+                      isDark: isDark,
+                      accent: AppColors.sosRed,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/admin');
+                      },
+                    ),
+                    _navItem(
+                      context,
+                      icon: Icons.developer_mode_outlined,
+                      title: 'Developer Panel',
+                      subtitle: 'Master DB Reset & Provisioning',
+                      isDark: isDark,
+                      accent: AppColors.domainProtest,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/dev-panel');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Discreet Group Creation Footer Link
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: InkWell(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, '/profile');
+                    Navigator.pushNamed(context, '/request-group');
                   },
+                  borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    margin: const EdgeInsets.all(12),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF131B2E) : const Color(0xFFFFFFFF),
-                      borderRadius: BorderRadius.circular(14),
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
                       ),
-                      boxShadow: isDark
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [AppColors.domainCycling, Color(0xFF4FACFE)],
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Have an org, club, or union?',
+                              style: TextStyle(fontSize: 10, color: isDark ? AppColors.textMuted : AppColors.textSecondaryLight),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.domainCycling.withValues(alpha: 0.3),
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'RS',
+                            Text(
+                              '[ 📋 Request to create a group > ]',
                               style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF060911),
-                                fontSize: 16,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? AppColors.domainCycling : const Color(0xFF0284C7),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Rajesh Sharma',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.verified_rounded, size: 14, color: AppColors.domainCycling),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                '+91 98230-12345 • View Pass & QR',
-                                style: TextStyle(fontSize: 11, color: AppColors.domainCycling, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textMuted),
+                        Icon(Icons.arrow_forward_ios_rounded, size: 12, color: isDark ? AppColors.domainCycling : const Color(0xFF0284C7)),
                       ],
                     ),
                   ),
                 ),
+              ),
 
-                // 3. Navigation Links List
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    children: [
-                      _navTile(
-                        context,
-                        icon: Icons.navigation_rounded,
-                        title: 'Home Dashboard',
-                        subtitle: 'Rally map & live broadcast alerts',
-                        isSelected: true,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushReplacementNamed(context, '/home');
-                        },
-                      ),
-                      _navTile(
-                        context,
-                        icon: Icons.groups_rounded,
-                        title: 'My Sub-Groups',
-                        subtitle: '2/3 Enrolled • 1-Active Toggle',
-                        badge: '2/3',
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/groups');
-                        },
-                      ),
-                      _navTile(
-                        context,
-                        icon: Icons.qr_code_2_rounded,
-                        title: 'My Rally Pass & Links',
-                        subtitle: 'Official QR Code & encrypted share URLs',
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/profile');
-                        },
-                      ),
-
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                        child: Row(
-                          children: [
-                            Text(
-                              'DEMO ROLE SWITCHER',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textMuted,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Expanded(child: Divider(color: AppColors.borderSubtleDark, height: 1)),
-                          ],
-                        ),
-                      ),
-
-                      _navTile(
-                        context,
-                        icon: Icons.military_tech_rounded,
-                        title: '👔 Group Leader Hub',
-                        subtitle: 'VNIT Club team operations & triage',
-                        accentColor: AppColors.domainMarathon,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/leader');
-                        },
-                      ),
-                      _navTile(
-                        context,
-                        icon: Icons.local_police_rounded,
-                        title: '👮 Traffic Police Command',
-                        subtitle: 'Junction ETAs & road advisories (No SOS)',
-                        accentColor: AppColors.policeBlue,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/police');
-                        },
-                      ),
-                      _navTile(
-                        context,
-                        icon: Icons.admin_panel_settings_rounded,
-                        title: '🛡️ SuperAdmin Console',
-                        subtitle: 'Domain governance, route & dispatch',
-                        accentColor: AppColors.sosRed,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/admin');
-                        },
-                      ),
-                      _navTile(
-                        context,
-                        icon: Icons.developer_mode_rounded,
-                        title: '🛠️ Developer Master Panel',
-                        subtitle: 'SuperAdmin seating (5-6 cap) & health',
-                        accentColor: AppColors.domainParade,
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/dev-panel');
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                // 4. Discreet Footer Section (Group Application Form Link)
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0D1424) : const Color(0xFFF1F5F9),
-                    border: Border(
-                      top: BorderSide(
-                        color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
-                      ),
+              // 4. Fixed Bottom Button: [ 🔄 SWITCH EVENT DOMAIN ]
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                  border: Border(
+                    top: BorderSide(
+                      color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Have an organization, college, or club?',
-                        style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-                      ),
-                      const SizedBox(height: 4),
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/request-group');
-                        },
-                        child: const Row(
-                          children: [
-                            Text(
-                              '📋 Request to create a group',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.domainCycling,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.domainCycling),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-
-                // 5. Universal Domain Switcher Button (Fixed at Bottom)
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight,
-                      foregroundColor: AppColors.domainCycling,
-                      side: const BorderSide(color: AppColors.domainCycling, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.sync_alt_rounded, size: 18),
-                    label: const Text(
-                      '🔄 SWITCH EVENT DOMAIN',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.8),
-                    ),
-                    onPressed: () {
-                      _showDomainSwitcherModal(context, service);
-                    },
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.domainCycling,
+                    foregroundColor: Colors.black87,
+                    minimumSize: const Size(double.infinity, 46),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
+                  icon: const Icon(Icons.sync_rounded, size: 18),
+                  label: const Text(
+                    '🔄 SWITCH EVENT DOMAIN',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showDomainSwitcherModal(context, service, isDark);
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  static Widget _navTile(
+  static Widget _navItem(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    Color? accentColor,
+    required bool isDark,
+    Color? accent,
     String? badge,
-    bool isSelected = false,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final itemColor = accent ?? (isDark ? AppColors.domainCycling : const Color(0xFF0284C7));
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.domainCycling.withValues(alpha: 0.1) : Colors.transparent,
+        color: isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight,
+        ),
       ),
       child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(
-          icon,
-          color: accentColor ?? (isSelected ? AppColors.domainCycling : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
-          size: 20,
-        ),
+        dense: true,
+        leading: Icon(icon, color: itemColor, size: 20),
         title: Row(
           children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: accentColor ?? (isSelected ? AppColors.domainCycling : (isDark ? Colors.white : AppColors.textPrimaryLight)),
-                ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
             ),
-            if (badge != null)
+            if (badge != null) ...[
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.domainCycling.withValues(alpha: 0.2),
+                  color: itemColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   badge,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.domainCycling),
+                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: itemColor),
                 ),
               ),
+            ],
           ],
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 10, color: isDark ? AppColors.textMuted : AppColors.textSecondaryLight),
         ),
-        trailing: const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.textMuted),
+        trailing: Icon(Icons.arrow_forward_ios_rounded, size: 12, color: isDark ? Colors.white38 : Colors.black38),
         onTap: onTap,
       ),
     );
   }
 
-  static void _showDomainSwitcherModal(BuildContext context, MockDataService service) {
+  static void _showDomainSwitcherModal(BuildContext context, MockDataService service, bool isDark) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.bgPrimaryDark,
+      backgroundColor: isDark ? AppColors.bgPrimaryDark : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
+      builder: (ctx) {
         return Padding(
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,59 +402,91 @@ class UniversalNavDrawer extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Select Event Domain (Tenant)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                  Text(
+                    'SELECT ACTIVE EVENT DOMAIN',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColors.textSecondaryDark),
-                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               const Text(
-                'Each domain isolates all rosters, routes, broadcasts, and emergency queues.',
+                'Switching domains changes the live route, enrolled sub-groups, and emergency routing context.',
                 style: TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
               const SizedBox(height: 16),
               ...service.domains.map((domain) {
                 final isSelected = domain.id == service.currentDomain.id;
+                final color = _getDomainColor(domain.type);
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF1E293B) : AppColors.surfaceCardDark,
+                    color: isSelected
+                        ? color.withValues(alpha: isDark ? 0.15 : 0.1)
+                        : (isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isSelected ? AppColors.domainCycling : AppColors.borderSubtleDark,
-                      width: isSelected ? 1.5 : 1.0,
+                      color: isSelected ? color : (isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight),
+                      width: isSelected ? 1.5 : 1,
                     ),
                   ),
                   child: ListTile(
-                    leading: Icon(
-                      _getDomainIcon(domain.type),
-                      color: isSelected ? AppColors.domainCycling : AppColors.textSecondaryDark,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(_getDomainIcon(domain.type), style: const TextStyle(fontSize: 18)),
                     ),
-                    title: Text(
-                      domain.name,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                    title: Row(
+                      children: [
+                        Text(
+                          domain.name,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                          ),
+                        ),
+                        if (isSelected) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text('ACTIVE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.black)),
+                          ),
+                        ],
+                      ],
                     ),
                     subtitle: Text(
-                      '${domain.status.name.toUpperCase()} • ${domain.routeSummary}',
-                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      '${domain.routeSummary} • ${domain.status.name.toUpperCase()}',
+                      style: TextStyle(fontSize: 10, color: isDark ? AppColors.textMuted : AppColors.textSecondaryLight),
                     ),
-                    trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: AppColors.domainCycling, size: 20) : null,
+                    trailing: isSelected
+                        ? Icon(Icons.check_circle_rounded, color: color, size: 20)
+                        : const Icon(Icons.radio_button_unchecked, size: 18, color: AppColors.textMuted),
                     onTap: () {
-                      service.switchDomain(domain);
-                      Navigator.pop(context);
+                      service.switchDomain(domain.id);
+                      Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          backgroundColor: AppColors.domainCycling,
+                          backgroundColor: color,
                           content: Text(
-                            '🔄 Switched to ${domain.name}!',
-                            style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                            '🔄 Switched domain to ${domain.name}!',
+                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                           ),
                         ),
                       );
@@ -517,17 +501,33 @@ class UniversalNavDrawer extends StatelessWidget {
     );
   }
 
-  static IconData _getDomainIcon(DomainType type) {
+  static String _getDomainIcon(DomainType type) {
     switch (type) {
       case DomainType.cycling:
-        return Icons.directions_bike_rounded;
+        return '🚲';
       case DomainType.marathon:
-        return Icons.directions_run_rounded;
+        return '🏃';
       case DomainType.protest:
-        return Icons.campaign_rounded;
-      case DomainType.parade:
+        return '📢';
       case DomainType.walkathon:
-        return Icons.directions_walk_rounded;
+        return '🚶';
+      case DomainType.parade:
+        return '🎺';
+    }
+  }
+
+  static Color _getDomainColor(DomainType type) {
+    switch (type) {
+      case DomainType.cycling:
+        return AppColors.domainCycling;
+      case DomainType.marathon:
+        return AppColors.domainMarathon;
+      case DomainType.protest:
+        return AppColors.domainProtest;
+      case DomainType.walkathon:
+        return AppColors.domainWalkathon;
+      case DomainType.parade:
+        return AppColors.domainParade;
     }
   }
 }

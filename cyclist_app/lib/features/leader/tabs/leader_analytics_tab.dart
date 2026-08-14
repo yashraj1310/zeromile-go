@@ -12,42 +12,43 @@ class LeaderAnalyticsTab extends StatelessWidget {
       children: [
         // 1. Muster Roll & Attendance Card
         GlassCard(
+          borderColor: AppColors.domainCycling.withOpacity(0.3),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.analytics_rounded, size: 16, color: AppColors.domainCycling),
+                  Icon(Icons.analytics_rounded, size: 18, color: AppColors.domainCycling),
                   SizedBox(width: 8),
-                  Text('MUSTER ROLL & ATTENDANCE STATS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                  Text('MUSTER ROLL & ATTENDANCE STATS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
                 ],
               ),
               const SizedBox(height: 14),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _statItem('38', 'Total Enrolled'),
-                  _statItem('34', 'Active Today (89.4%)'),
-                  _statItem('32', 'Checked-in (94.1%)'),
-                  _statItem('18', 'Finished (52.9%)'),
+                  _statItem('38', 'Total Enrolled', Colors.white),
+                  _statItem('34', 'Active (89%)', AppColors.domainCycling),
+                  _statItem('32', 'Checked-in (94%)', AppColors.domainMarathon),
+                  _statItem('18', 'Finished (53%)', AppColors.warningAmber),
                 ],
               ),
               const SizedBox(height: 16),
-              const Text('Muster Check-in Progress (Ambazari Gate):', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-              const SizedBox(height: 6),
+              const Text('Muster Assembly Progress (Ambazari Gate):', style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: const LinearProgressIndicator(
                   value: 0.941,
-                  minHeight: 10,
+                  minHeight: 8,
                   backgroundColor: Color(0xFF1E293B),
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.domainMarathon),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               const Align(
                 alignment: Alignment.centerRight,
-                child: Text('32 of 34 Active Checked-in', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                child: Text('32 of 34 Active Checked-in', style: TextStyle(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -57,17 +58,18 @@ class LeaderAnalyticsTab extends StatelessWidget {
 
         // 2. Incident & Route Performance
         GlassCard(
+          borderColor: AppColors.domainMarathon.withOpacity(0.3),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.health_and_safety_rounded, size: 16, color: AppColors.domainMarathon),
+                  Icon(Icons.health_and_safety_rounded, size: 18, color: AppColors.domainMarathon),
                   SizedBox(width: 8),
-                  Text('TEAM SAFETY & INCIDENT LOG', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                  Text('TEAM SAFETY & INCIDENT LOG', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _logRow('🚨 SOS Triggered', '1 (Priya Verma - Heat exhaustion)', AppColors.sosRed),
               _logRow('✅ SOS Resolved', '1 (Hydration support dispatched)', AppColors.domainMarathon),
               _logRow('⚡ Avg Contingent Pace', '18.4 km/h', AppColors.domainCycling),
@@ -81,14 +83,16 @@ class LeaderAnalyticsTab extends StatelessWidget {
         // 3. Export CSV Action
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.surfaceCard,
+            backgroundColor: const Color(0xFF0F172A),
             foregroundColor: AppColors.domainCycling,
-            side: const BorderSide(color: AppColors.domainCycling),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            side: BorderSide(color: AppColors.domainCycling.withOpacity(0.6), width: 1.5),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+            shadowColor: AppColors.domainCycling.withOpacity(0.2),
           ),
-          icon: const Icon(Icons.download_rounded, size: 18),
-          label: const Text('📥 EXPORT TEAM ATTENDANCE CSV', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          icon: const Icon(Icons.download_rounded, size: 20),
+          label: const Text('📥 EXPORT TEAM ATTENDANCE CSV', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5)),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -102,14 +106,22 @@ class LeaderAnalyticsTab extends StatelessWidget {
     );
   }
 
-  Widget _statItem(String val, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(val, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'monospace')),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
-      ],
+  Widget _statItem(String val, String label, Color accent) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(val, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: accent, fontFamily: 'monospace')),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 9, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 
@@ -119,7 +131,7 @@ class LeaderAnalyticsTab extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
           Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: accent)),
         ],
       ),
