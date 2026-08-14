@@ -29,7 +29,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       animation: service,
       builder: (context, _) {
         final domain = service.currentDomain;
-        final isLive = service.isDomainLive;
+        final isLive = service.isCurrentDomainLive;
         final broadcasts = service.broadcasts;
         final activeGroup = service.activeSubGroup;
         final isDark = service.themeMode == ThemeMode.dark;
@@ -75,12 +75,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   color: isLive ? AppColors.domainMarathon : AppColors.sosRed,
                 ),
                 onPressed: () {
-                  service.toggleDomainLiveStatus();
+                  service.forceLiveWindow = !service.forceLiveWindow;
+                  // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+                  service.notifyListeners();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      backgroundColor: isLive ? AppColors.sosRed : AppColors.domainMarathon,
+                      backgroundColor: service.forceLiveWindow ? AppColors.domainMarathon : AppColors.sosRed,
                       content: Text(
-                        isLive ? '⏱️ Event status changed to INACTIVE (Pre-Event Preview)' : '🟢 Event status changed to LIVE ACTIVE HUD',
+                        service.forceLiveWindow
+                            ? '🟢 Event status changed to LIVE ACTIVE HUD'
+                            : '⏱️ Event status changed to INACTIVE (Pre-Event Preview)',
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                     ),
@@ -183,14 +187,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              const DynamicDensityMapView(
-                routeCoords: [
-                  {'lat': 21.1458, 'lng': 79.0882},
-                  {'lat': 21.1350, 'lng': 79.0700},
-                  {'lat': 21.1280, 'lng': 79.0550},
-                  {'lat': 21.1150, 'lng': 79.0400},
-                ],
-              ),
+              const DynamicDensityMapView(),
               Positioned(
                 top: 10,
                 left: 10,
@@ -249,7 +246,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         // 4. Active Sub-Group Card
         ActiveGroupCard(
           activeGroup: activeGroup,
-          onManageGroupsTap: () => Navigator.pushNamed(context, '/groups'),
+          onChangeGroupTap: () => Navigator.pushNamed(context, '/groups'),
+          onOpenHubTap: () => Navigator.pushNamed(context, '/leader'),
         ),
       ],
     );
@@ -314,14 +312,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             border: Border.all(color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight),
           ),
           clipBehavior: Clip.antiAlias,
-          child: const StaticRoutePreviewMap(),
+          child: StaticRoutePreviewMap(routeSummary: domain.routeSummary),
         ),
         const SizedBox(height: 14),
 
         // 3. Enrolled Sub-Groups Quick Hub
         ActiveGroupCard(
           activeGroup: service.activeSubGroup,
-          onManageGroupsTap: () => Navigator.pushNamed(context, '/groups'),
+          onChangeGroupTap: () => Navigator.pushNamed(context, '/groups'),
+          onOpenHubTap: () => Navigator.pushNamed(context, '/leader'),
         ),
         const SizedBox(height: 14),
 

@@ -179,7 +179,7 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                               type: _selectedType,
                               lat: 21.1350,
                               lng: 79.0700,
-                              notes: _descController.text.trim(),
+                              note: _descController.text.trim(),
                             );
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
