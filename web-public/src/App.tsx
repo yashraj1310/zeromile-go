@@ -1,8 +1,8 @@
 import React from 'react';
-import { PublicWebViewer } from './components/PublicWebViewer';
+import { DeviceSimulator } from './components/DeviceSimulator';
 
 export function App() {
-  return <PublicWebViewer />;
+  return <DeviceSimulator />;
 }
 
 export default App;
