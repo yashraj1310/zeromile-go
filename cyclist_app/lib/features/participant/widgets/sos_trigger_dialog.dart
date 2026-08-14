@@ -27,13 +27,13 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
     final activeGroup = service.activeSubGroup;
 
     return Dialog(
-      backgroundColor: AppColors.bgPrimary,
+      backgroundColor: const Color(0xFF0F172A),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.sosRed, width: 1.5),
+        side: BorderSide(color: AppColors.sosRed.withOpacity(0.6), width: 1.5),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,8 +42,8 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: const BoxDecoration(
-                    color: AppColors.sosRedGlass,
+                  decoration: BoxDecoration(
+                    color: AppColors.sosRed.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.warning_amber_rounded, color: AppColors.sosRed, size: 28),
@@ -54,12 +54,12 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'EMERGENCY SOS ALERT',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.sosRed),
+                        'EMERGENCY SOS DISTRESS',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.sosRed, letterSpacing: 0.5),
                       ),
                       Text(
-                        'Live GPS coordinates will be sent instantly',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        'Live GPS telemetry will be broadcasted instantly',
+                        style: TextStyle(fontSize: 10, color: AppColors.textMuted),
                       ),
                     ],
                   ),
@@ -72,8 +72,8 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.borderSubtle),
               ),
               child: Row(
@@ -83,9 +83,9 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                   Expanded(
                     child: Text(
                       activeGroup != null
-                          ? 'Routing directly to Group Leader: ${activeGroup.leaderName} (${activeGroup.name})'
-                          : 'No active sub-group. Routing directly to SuperAdmin Triage Command.',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textPrimary),
+                          ? 'Routing to Leader: ${activeGroup.leaderName} (${activeGroup.name})'
+                          : 'No active sub-group. Routing to SuperAdmin Triage Command.',
+                      style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
@@ -93,8 +93,8 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
             ),
             const SizedBox(height: 16),
 
-            const Text('Select Emergency Type:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
-            const SizedBox(height: 8),
+            const Text('SELECT EMERGENCY INCIDENT TYPE:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
+            const SizedBox(height: 10),
 
             // Emergency Type Selector
             Row(
@@ -110,24 +110,31 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
 
             TextField(
               controller: _noteController,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
               decoration: InputDecoration(
                 hintText: 'Brief note (e.g. Heatstroke at Km 5, crash, flat tyre)',
-                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.borderSubtle),
+                ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
 
-            ElevatedButton(
+            ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.sosRed,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 6,
+                shadowColor: AppColors.sosRed.withOpacity(0.5),
               ),
+              icon: const Icon(Icons.emergency_rounded, size: 20),
+              label: const Text('🚨 BROADCAST SOS NOW', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
               onPressed: _isSubmitting
                   ? null
                   : () {
@@ -150,12 +157,11 @@ class _SosTriggerDialogState extends State<SosTriggerDialog> {
                         ),
                       );
                     },
-              child: const Text('🚨 BROADCAST SOS NOW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
             ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
             ),
           ],
         ),

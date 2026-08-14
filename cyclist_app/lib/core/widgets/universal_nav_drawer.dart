@@ -17,7 +17,7 @@ class UniversalNavDrawer extends StatelessWidget {
         final isDark = service.themeMode == ThemeMode.dark;
 
         return Drawer(
-          backgroundColor: isDark ? AppColors.bgPrimaryDark : AppColors.bgPrimaryLight,
+          backgroundColor: const Color(0xFF0F172A),
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -25,9 +25,9 @@ class UniversalNavDrawer extends StatelessWidget {
                 // Domain Header
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight,
-                    border: Border(bottom: BorderSide(color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight)),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1E293B),
+                    border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
                   ),
                   child: Row(
                     children: [
@@ -46,11 +46,7 @@ class UniversalNavDrawer extends StatelessWidget {
                           children: [
                             Text(
                               currentDomain.name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                              ),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -62,7 +58,7 @@ class UniversalNavDrawer extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight, size: 20),
+                        icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary, size: 20),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -75,35 +71,35 @@ class UniversalNavDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/profile');
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 20,
                           backgroundColor: Color(0xFF1E293B),
                           child: Text('RS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Rajesh Sharma',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppColors.textPrimaryLight),
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
                               ),
-                              const Text('+91 98230-12345 • View Profile', style: TextStyle(fontSize: 11, color: AppColors.domainCycling)),
+                              Text('+91 98230-12345 • View Profile', style: TextStyle(fontSize: 11, color: AppColors.domainCycling)),
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+                        Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textMuted),
                       ],
                     ),
                   ),
                 ),
 
-                Divider(color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight, height: 1),
+                const Divider(color: AppColors.borderSubtle, height: 1),
 
                 // Core Navigation Links
                 Expanded(
@@ -139,8 +135,8 @@ class UniversalNavDrawer extends StatelessWidget {
                       ),
 
                       const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Text('ROLE SWITCHER (DEMO)', style: TextStyle(fontSize: 10, color: AppColors.textMuted, letterSpacing: 1)),
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        child: Text('ROLE SWITCHER (DEMO CONTROL)', style: TextStyle(fontSize: 10, color: AppColors.textMuted, letterSpacing: 1, fontWeight: FontWeight.bold)),
                       ),
                       _navTile(
                         icon: Icons.military_tech_rounded,
@@ -189,9 +185,9 @@ class UniversalNavDrawer extends StatelessWidget {
                 // Discreet Footer Section (Group Application Link)
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                    border: Border(top: BorderSide(color: isDark ? AppColors.borderSubtleDark : AppColors.borderSubtleLight)),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F172A),
+                    border: Border(top: BorderSide(color: AppColors.borderSubtle)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +209,7 @@ class UniversalNavDrawer extends StatelessWidget {
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.domainCycling),
                             ),
                             SizedBox(width: 4),
-                            Icon(Icons.chevron_right, size: 14, color: AppColors.domainCycling),
+                            Icon(Icons.chevron_right_rounded, size: 14, color: AppColors.domainCycling),
                           ],
                         ),
                       ),
@@ -226,16 +222,16 @@ class UniversalNavDrawer extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? AppColors.surfaceCardDark : AppColors.surfaceCardLight,
+                      backgroundColor: const Color(0xFF1E293B),
                       foregroundColor: AppColors.domainCycling,
-                      side: const BorderSide(color: AppColors.domainCycling, width: 1),
+                      side: BorderSide(color: AppColors.domainCycling.withOpacity(0.5)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     icon: const Icon(Icons.sync_alt_rounded, size: 18),
                     label: const Text(
                       '🔄 SWITCH EVENT DOMAIN',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5),
                     ),
                     onPressed: () {
                       _showDomainSwitcherModal(context, service);
