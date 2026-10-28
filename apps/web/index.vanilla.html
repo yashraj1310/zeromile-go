@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZeroMile Go - Smart Commute, Live Traffic & 3D Transit Studio</title>
+
+  <!-- Google Fonts: Outfit, Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Mapbox GL JS v3 (CSS & JS with true 3D extrusions & DEM terrain) -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+
+  <!-- Turf.js for live spatial route calculation & line interpolation -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="view-landing">
+
+  <!-- ========================================================================= -->
+  <!-- 1. LANDING & COMMUTE EXPLORER (ZeroMile Go)                               -->
+  <!-- ========================================================================= -->
+  <div id="landingView" class="page-view active">
+    
+    <!-- Hero Header Navigation Bar -->
+    <header class="hero-navbar">
+      <div class="nav-brand" onclick="switchView('landing')">
+        <div class="brand-logo-wrap">
+          <svg class="brand-logo-svg" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#10B981"/>
+                <stop offset="50%" stop-color="#06B6D4"/>
+                <stop offset="100%" stop-color="#3B82F6"/>
+              </linearGradient>
+              <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFFFFF"/>
+                <stop offset="100%" stop-color="#A7F3D0"/>
+              </linearGradient>
+              <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <rect x="2" y="2" width="40" height="40" rx="12" fill="#0B132B" stroke="url(#logoGrad)" stroke-width="2"/>
+            <circle cx="22" cy="22" r="14" stroke="#10B981" stroke-width="1" stroke-dasharray="3 3" opacity="0.4"/>
+            <circle cx="22" cy="22" r="8" stroke="#06B6D4" stroke-width="1" opacity="0.6"/>
+            <polygon points="17,34 27,34 25,26 19,26" fill="url(#logoGrad)" opacity="0.85"/>
+            <polygon points="22,8 31,25 22,21 13,25" fill="url(#needleGrad)" filter="url(#glowFilter)"/>
+            <circle cx="22" cy="21" r="2.5" fill="#10B981"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">ZeroMile <span class="brand-accent">Go</span></span>
+          <span class="brand-sub">CIVIC MOBILITY & LIVE CORRIDORS</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#explore" class="nav-link active">Explore Routes ▾</a>
+        <a href="#active-events" class="nav-link" onclick="scrollToEvents()">Live Corridors</a>
+        <a href="#bulletin" class="nav-link" onclick="showBulletinModal()">Civic Bulletins</a>
+        <a href="#traffic-info" class="nav-link" onclick="openMapAsGuest('traffic')">Traffic Flow</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-get-started" onclick="openMapAsGuest()">
+          Get Started
+        </button>
+        <button class="btn btn-admin-outline" onclick="openLoginModal('admin')">
+          SuperAdmin Portal
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Hero Banner Section with Dual Search (Origin & Destination) -->
+    <section class="hero-section">
+      <div class="hero-backdrop" style="background-image: url('public/hero_banner.jpg');">
+        <div class="hero-gradient-overlay"></div>
+      </div>
+
+      <div class="hero-content">
+        <h1 class="hero-headline">
+          Discover Nagpur with <br />
+          <span class="highlight-brand">ZeroMile Go</span>
+        </h1>
+        <p class="hero-subtitle">
+          Real-time GPS routing, automatic rally & cyclothon detour engine, and 3D civic corridors.
+        </p>
+
+        <!-- Floating Hero Dual Search Box (Origin + Destination) -->
+        <div class="hero-search-dual-container">
+          <div class="hero-dual-search-pill">
+            <!-- Origin Search Field -->
+            <div class="hero-input-group origin-group">
+              <span class="input-dot green-dot"></span>
+              <div class="input-text-wrap">
+                <span class="input-lbl">STARTING POINT</span>
+                <input type="text" id="heroOriginInput" placeholder="Choose starting point in Nagpur..." oninput="handleHeroOriginSearch(event)" onfocus="handleHeroOriginSearch(event)" />
+              </div>
+              <button class="btn-gps-mini" onclick="useCurrentGpsLocation()" title="Use My Current GPS Location">📍 GPS</button>
+              <div class="hero-dropdown" id="heroOriginDropdown"></div>
+            </div>
+
+            <!-- Swap Button -->
+            <button class="btn-hero-swap" onclick="swapHeroLocations()" title="Swap start & destination">
+              ⇄
+            </button>
+
+            <!-- Destination Search Field -->
+            <div class="hero-input-group dest-group">
+              <span class="input-dot red-dot"></span>
+              <div class="input-text-wrap">
+                <span class="input-lbl">DESTINATION</span>
+                <input type="text" id="heroDestInput" placeholder="Choose destination in Nagpur..." oninput="handleHeroDestSearch(event)" onfocus="handleHeroDestSearch(event)" />
+              </div>
+              <button class="btn-gps-mini" onclick="useCurrentGpsLocation('dest')" title="Use My Current GPS Location as Destination">📍 GPS</button>
+              <div class="hero-dropdown" id="heroDestDropdown"></div>
+            </div>
+
+            <!-- Search Action Button -->
+            <button class="btn-hero-search-action" onclick="executeHeroDualSearch()">
+              Search Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Footer Social & Civic Strip -->
+        <div class="hero-bottom-meta">
+          <div class="hero-follow-strip">
+            <span class="follow-label">Official Civic Nodes:</span>
+            <span class="hub-pill" onclick="setQuickRoute('vnit', 'zeromile')">🏛️ Zero Mile</span>
+            <span class="hub-pill" onclick="setQuickRoute('vnit', 'zeromile')">🎓 VNIT Campus</span>
+            <span class="hub-pill" onclick="setQuickRoute('aiims', 'sitabuldi')">🏥 AIIMS MIHAN</span>
+            <span class="hub-pill" onclick="setQuickRoute('futala', 'medical')">🌳 Futala Lake</span>
+          </div>
+
+          <!-- Carousel Slider Lines -->
+          <div class="hero-carousel-lines">
+            <span class="line active"></span>
+            <span class="line"></span>
+            <span class="line"></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: "FIND YOUR COMMUTE" (Soothing Eye-Friendly Soft Slate)          -->
+    <!-- ========================================================================= -->
+    <section class="filter-strip-section" id="explore">
+      <div class="container">
+        
+        <div class="section-heading-center">
+          <span class="section-sub-badge">⚡ ZEROMILE GO ROUTE ENGINE</span>
+          <h2>Find Your Perfect Commute & Route</h2>
+          <p>Select your origin, destination, and vehicle mode to bypass active rally road closures and delays.</p>
+        </div>
+
+        <!-- Floating Multi-Column Filter Bar Card (Dynamic Search for All Nagpur Locations) -->
+        <div class="filter-bar-card">
+          
+          <div class="filter-item filter-search-wrap">
+            <label>STARTING POINT (ORIGIN)</label>
+            <div class="filter-input-inner">
+              <span class="input-dot green-dot"></span>
+              <input type="text" id="filterStartInput" placeholder="Type starting place in Nagpur..." oninput="handleFilterOriginSearch(event)" onfocus="handleFilterOriginSearch(event)" />
+              <button class="btn-gps-mini" onclick="useCurrentGpsLocation('origin')" title="Use Live GPS Location">📍 GPS</button>
+            </div>
+            <div class="filter-live-dropdown" id="filterOriginDropdown"></div>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-item filter-search-wrap">
+            <label>DESTINATION</label>
+            <div class="filter-input-inner">
+              <span class="input-dot red-dot"></span>
+              <input type="text" id="filterEndInput" placeholder="Type destination in Nagpur..." oninput="handleFilterDestSearch(event)" onfocus="handleFilterDestSearch(event)" />
+              <button class="btn-gps-mini" onclick="useCurrentGpsLocation('dest')" title="Use Live GPS Location">📍 GPS</button>
+            </div>
+            <div class="filter-live-dropdown" id="filterDestDropdown"></div>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-item">
+            <label>COMMUTE MODE</label>
+            <select id="filterMode" onchange="updateModeFromFilter()">
+              <option value="driving">🚗 Four Wheeler / Cab</option>
+              <option value="cycling">🚲 Cycling / Bike</option>
+              <option value="walking">🚶 Pedestrian / Walking</option>
+            </select>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-item">
+            <label>TRAFFIC PREFERENCE</label>
+            <select id="filterTrafficPref">
+              <option value="fastest">⚡ Fastest with Live Traffic</option>
+              <option value="avoid_closures">🚧 Avoid Active Rally Barricades</option>
+              <option value="scenic">🌳 Green Corridor (Lakes & Parks)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-filter-submit" onclick="launchLiveMapFromFilter()">
+            Search Now
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: SHOWCASE CARDS (Eye-Friendly Dark Slate Cards)                 -->
+    <!-- ========================================================================= -->
+    <section class="active-events-section" id="active-events">
+      <div class="container">
+        
+        <div class="routes-grid">
+          
+          <!-- Route Card 1: Nagpur Grand Cyclothon Corridor -->
+          <div class="route-card" onclick="previewEventOnMap('CYCLOTHON')">
+            <div class="card-thumb" style="background-image: url('https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=700&q=80');">
+              <span class="card-tag primary-tag">★ 4.9 • 6.2 km</span>
+              <span class="traffic-pill flow-clear">🚴 Active Cyclothon</span>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="card-time">⚡ 18 min</span>
+                <span class="card-road">via Wardha Rd & Shankar Nagar Sq</span>
+              </div>
+              <h3 class="card-title">VNIT Campus ➔ Zero Mile Freedom Park</h3>
+              <p class="card-desc">Direct artery connecting South Ambazari to Civil Lines. Active Cyclothon corridor with live +20 min delay warning & alternate bypass.</p>
+              <div class="card-footer">
+                <span class="badge-sub">2 Alternate Paths Available</span>
+                <button class="btn-card-go">Go ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Route Card 2: Nagpur 21K/42K Marathon -->
+          <div class="route-card" onclick="previewEventOnMap('MARATHON')">
+            <div class="card-thumb" style="background-image: url('https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=700&q=80');">
+              <span class="card-tag">★ 4.8 • 18.5 km</span>
+              <span class="traffic-pill flow-moderate">🏃 City Marathon</span>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="card-time">⚡ 22 min</span>
+                <span class="card-road">via Civil Lines & Seminary Hills</span>
+              </div>
+              <h3 class="card-title">Zero Mile ➔ Seminary Hills Green Corridor</h3>
+              <p class="card-desc">Official 21K Marathon loop through High Court & Seminary Hills promenade. 8 hydration stations & medical units stationed.</p>
+              <div class="card-footer">
+                <span class="badge-sub">Managed by Marathon Admin</span>
+                <button class="btn-card-go">Go ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Route Card 3: Sitabuldi Heritage Rally -->
+          <div class="route-card" onclick="previewEventOnMap('RALLY')">
+            <div class="card-thumb" style="background-image: url('public/civic_procession.jpg');">
+              <span class="card-tag">★ 5.0 • 12.0 km</span>
+              <span class="traffic-pill flow-clear">🚩 Civic Procession</span>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="card-time">⚡ 28 min</span>
+                <span class="card-road">via Outer Ring Road Bypass</span>
+              </div>
+              <h3 class="card-title">Variety Sq ➔ Sitabuldi Central Market</h3>
+              <p class="card-desc">Sitabuldi market artery barricaded for civic procession. Commuters smoothly rerouted via Outer Ring Road expressway bypass.</p>
+              <div class="card-footer">
+                <span class="badge-sub">Managed by Rally Admin</span>
+                <button class="btn-card-go">Go ➔</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="container footer-content">
+        <p>© 2026 ZeroMile Go Smart Mobility Platform • Powered by Mapbox 3D Engine & Municipal Telemetry</p>
+        <div class="footer-links">
+          <a href="#" onclick="openLoginModal('admin')">SuperAdmin Login</a>
+          <a href="#" onclick="openMapAsGuest()">ZeroMile Go 3D Live Map</a>
+          <a href="#bulletin" onclick="showBulletinModal()">Civic Bulletins</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. LOGIN / SUPERADMIN PORTAL (ZeroMile Go Civic Gateway)                  -->
+  <!-- ========================================================================= -->
+  <div id="loginModal" class="modal-overlay">
+    <div id="loginBlurredMapBackdrop" class="blurred-map-bg"></div>
+    <div class="modal-blur-glass"></div>
+
+    <div class="gateway-dialog">
+      <button class="modal-close-btn" onclick="closeLoginModal()">✕</button>
+
+      <div class="gateway-header">
+        <div class="gateway-logo">🛡️</div>
+        <h2>ZeroMile Go Civic Gateway</h2>
+        <p>Choose your access mode. SuperAdmins authenticate via Mobile Number & OTP verification.</p>
+      </div>
+
+      <div class="gateway-cards-grid">
+        <!-- Commuter Mode -->
+        <div class="gateway-card guest-card" onclick="openMapAsGuest()">
+          <div class="card-icon-wrap">🚗</div>
+          <h3>Everyday Commuter</h3>
+          <span class="role-badge guest-badge">GUEST ACCESS • NO LOGIN</span>
+          <p>Discover fastest routes, auto-detect active rally delays, switch to recommended bypass corridors, and navigate with turn-by-turn guidance.</p>
+          <ul class="feature-bullets">
+            <li>✓ Google Maps Style Navigation UI</li>
+            <li>✓ Auto-Clash Detection with Cyclothon / Marathon / Rally</li>
+            <li>✓ Multi-Color Traffic Levels (Green / Yellow / Orange / Red)</li>
+          </ul>
+          <button class="btn btn-guest-launch">
+            <span>Launch ZeroMile Go 3D Map</span> ➔
+          </button>
+        </div>
+
+        <!-- SuperAdmin Phone + OTP Command Portal -->
+        <div class="gateway-card admin-card">
+          <div class="card-icon-wrap admin-wrap">🛡️</div>
+          <h3>SuperAdmin Command Studio</h3>
+          <span class="role-badge admin-badge">PHONE NUMBER & OTP VERIFIED</span>
+          <p>Authorized civic organizers & police traffic marshals. Select your domain, enter your mobile number and verify via OTP.</p>
+
+          <!-- Domain Selector Tabs -->
+          <div class="admin-domain-selector">
+            <label class="domain-selector-label">SELECT EVENT DOMAIN:</label>
+            <div class="domain-tabs-row">
+              <button class="domain-tab active" id="domTabCyclothon" onclick="selectAdminDomain('CYCLOTHON')">
+                <span>🚴</span> Cyclothon
+              </button>
+              <button class="domain-tab" id="domTabMarathon" onclick="selectAdminDomain('MARATHON')">
+                <span>🏃</span> Marathon
+              </button>
+              <button class="domain-tab" id="domTabRally" onclick="selectAdminDomain('RALLY')">
+                <span>🚩</span> Rally / Procession
+              </button>
+            </div>
+            <div class="selected-domain-note" id="domainDescription">
+              Managing <b>Nagpur Grand Cyclothon</b> corridor, route waypoints, timing mats & rolling road diversions.
+            </div>
+          </div>
+
+          <!-- Phone + OTP Form -->
+          <div class="phone-otp-box" id="phoneOtpBox">
+            <!-- Step 1: Phone Input -->
+            <div id="phoneStepView" class="otp-step active">
+              <div class="form-group-phone">
+                <label>MOBILE NUMBER</label>
+                <div class="phone-input-wrap">
+                  <span class="country-code">+91</span>
+                  <input type="tel" id="adminPhoneInput" placeholder="98765 43210" maxlength="10" value="9823012345" />
+                </div>
+              </div>
+              <button class="btn btn-send-otp" onclick="requestAdminOtp()">
+                <span>📲</span> Send Verification OTP
+              </button>
+            </div>
+
+            <!-- Step 2: OTP Verification Input -->
+            <div id="otpStepView" class="otp-step hidden">
+              <div class="otp-instruction-row">
+                <span>Enter 6-digit OTP sent to <b id="otpSentPhone">+91 98230 12345</b>:</span>
+                <button class="btn-change-num" onclick="backToPhoneStep()">Change</button>
+              </div>
+
+              <div class="otp-inputs-row">
+                <input type="text" maxlength="1" class="otp-digit" id="otp1" oninput="handleOtpInput(1, event)" onkeydown="handleOtpBackspace(1, event)" />
+                <input type="text" maxlength="1" class="otp-digit" id="otp2" oninput="handleOtpInput(2, event)" onkeydown="handleOtpBackspace(2, event)" />
+                <input type="text" maxlength="1" class="otp-digit" id="otp3" oninput="handleOtpInput(3, event)" onkeydown="handleOtpBackspace(3, event)" />
+                <input type="text" maxlength="1" class="otp-digit" id="otp4" oninput="handleOtpInput(4, event)" onkeydown="handleOtpBackspace(4, event)" />
+                <input type="text" maxlength="1" class="otp-digit" id="otp5" oninput="handleOtpInput(5, event)" onkeydown="handleOtpBackspace(5, event)" />
+                <input type="text" maxlength="1" class="otp-digit" id="otp6" oninput="handleOtpInput(6, event)" onkeydown="handleOtpBackspace(6, event)" />
+              </div>
+
+              <button class="btn btn-verify-otp" onclick="verifyAdminOtp()">
+                <span>🔓</span> Verify OTP & Enter Studio
+              </button>
+            </div>
+
+            <div id="authStatusMsg" class="auth-status-text"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- 3. INTERACTIVE 3D LIVE MAP (ZeroMile Go 3D Navigation)                    -->
+  <!-- ========================================================================= -->
+  <div id="mapView" class="page-view">
+    
+    <!-- Top Google Maps Styled Search & Route Panel (Floating on Top-Left) -->
+    <div class="gmaps-top-card">
+      <div class="gmaps-header-bar">
+        <button class="gmaps-btn-home" onclick="switchView('landing')" title="Return to Home">
+          ←
+        </button>
+        
+        <!-- Google Maps Style Transit Mode Selector (Commuter Mode) -->
+        <div class="gmaps-transit-modes" id="commuterTransitModes">
+          <button class="gmaps-mode-btn active" id="gmodeDrive" onclick="setDrawerMode('driving')" title="Driving Mode">
+            🚗
+          </button>
+          <button class="gmaps-mode-btn" id="gmodeBike" onclick="setDrawerMode('cycling')" title="Cycling / Two Wheeler">
+            🚲
+          </button>
+          <button class="gmaps-mode-btn" id="gmodeWalk" onclick="setDrawerMode('walking')" title="Walking">
+            🚶
+          </button>
+        </div>
+
+        <!-- SuperAdmin Status Chip if Logged in -->
+        <div id="adminIndicatorBadge" class="admin-chip hidden">
+          <span class="chip-dot"></span>
+          <span id="adminEmailDisplay">SUPERADMIN (CYCLOTHON)</span>
+          <button class="btn-admin-logout" onclick="logoutAdmin()" title="Logout">✕</button>
+        </div>
+      </div>
+
+      <!-- COMMUTER ROUTE VIEW (Active in Guest Mode) -->
+      <div id="commuterViewContainer">
+        <!-- Spacious Origin & Destination Inputs with Dedicated GPS Buttons -->
+        <div class="gmaps-routing-inputs">
+          <div class="connector-line-visual">
+            <span class="route-point start-dot"></span>
+            <span class="route-line-dots"></span>
+            <span class="route-point end-dot"></span>
+          </div>
+
+          <div class="inputs-column">
+            <!-- Origin Input with GPS Button -->
+            <div class="gmaps-input-field">
+              <span class="input-tiny-label">FROM (ORIGIN)</span>
+              <div class="input-with-action">
+                <input type="text" id="mapOriginInput" placeholder="Choose starting point or click GPS..." oninput="handleMapOriginSearch(event)" onfocus="handleMapOriginSearch(event)" />
+                <button class="btn-gps-tag" onclick="useCurrentGpsLocation('origin')" title="Use Current GPS Location">📍 GPS</button>
+              </div>
+              <div class="gmaps-live-dropdown" id="mapOriginDropdown"></div>
+            </div>
+
+            <!-- Destination Input with GPS Button -->
+            <div class="gmaps-input-field">
+              <span class="input-tiny-label">TO (DESTINATION)</span>
+              <div class="input-with-action">
+                <input type="text" id="mapDestInput" placeholder="Choose destination in Nagpur..." oninput="handleMapDestSearch(event)" onfocus="handleMapDestSearch(event)" />
+                <button class="btn-gps-tag" onclick="useCurrentGpsLocation('dest')" title="Use Current GPS as Destination">📍 GPS</button>
+              </div>
+              <div class="gmaps-live-dropdown" id="mapDestDropdown"></div>
+            </div>
+          </div>
+
+          <button class="gmaps-swap-btn" onclick="swapMapLocations()" title="Swap start and destination">
+            ⇅
+          </button>
+        </div>
+
+        <!-- Quick Hub Chips for Commuters -->
+        <div class="quick-admin-chips-inline commuter-quick-chips" style="margin-top: 10px; margin-bottom: 12px;">
+          <button type="button" class="admin-chip-btn-sm" onclick="setCommuterDirectQuickRoute('vnit', 'zeromile')">🏛️ VNIT ➔ Zero Mile</button>
+          <button type="button" class="admin-chip-btn-sm" onclick="setCommuterDirectQuickRoute('aiims', 'sitabuldi')">🏥 AIIMS ➔ Sitabuldi</button>
+          <button type="button" class="admin-chip-btn-sm" onclick="setCommuterDirectQuickRoute('futala', 'seminary')">🌊 Futala ➔ Seminary</button>
+          <button type="button" class="admin-chip-btn-sm" onclick="setCommuterDirectQuickRoute('besa', 'sadar')">🏢 Besa ➔ Sadar</button>
+        </div>
+
+        <!-- Google Maps Style Route Options Summary (All Routes Rendered with High Visibility) -->
+        <div class="gmaps-route-options" id="gmapsRouteOptions">
+          <!-- Fastest Clean Bypass Route -->
+          <div class="gmaps-route-card selected" id="optRouteAlt2" onclick="selectRouteOption('alt2')">
+            <div class="rc-left">
+              <div class="rc-title-row">
+                <span class="rc-time">18 min</span>
+                <span class="rc-tag recommended">✨ Saves 20 mins</span>
+              </div>
+              <div class="rc-via">7.4 km • via Ambazari Lake & Civil Lines</div>
+              <div class="rc-traffic-status green">🟢 Clean Bypass • Avoids Event Closures</div>
+            </div>
+            <button class="btn-gmaps-go" onclick="startNavigation('alt2', event)" title="Preview 3D Car Navigation">Go</button>
+          </div>
+
+          <!-- Direct Route Passing Active Event Corridor -->
+          <div class="gmaps-route-card" id="optRoutePrimary" onclick="selectRouteOption('primary')">
+            <div class="rc-left">
+              <div class="rc-title-row">
+                <span class="rc-time danger">38 min</span>
+                <span class="rc-tag delay">⚠️ +20 min delay</span>
+              </div>
+              <div class="rc-via">6.2 km • via Wardha Road Main Artery</div>
+              <div class="rc-traffic-status red">🔴 Passes Through Active Closed Corridor</div>
+            </div>
+            <button class="btn-gmaps-go" onclick="startNavigation('primary', event)" title="Preview 3D Car Navigation">Go</button>
+          </div>
+
+          <!-- Outer Ring Road Expressway -->
+          <div class="gmaps-route-card" id="optRouteAlt1" onclick="selectRouteOption('alt1')">
+            <div class="rc-left">
+              <div class="rc-title-row">
+                <span class="rc-time">22 min</span>
+                <span class="rc-tag">⚡ Saves 16 mins</span>
+              </div>
+              <div class="rc-via">8.5 km • via Outer Ring Expressway</div>
+              <div class="rc-traffic-status green">🟢 Free Highway Flow</div>
+            </div>
+            <button class="btn-gmaps-go" onclick="startNavigation('alt1', event)" title="Preview 3D Car Navigation">Go</button>
+          </div>
+        </div>
+
+        <!-- Commuter Quick Actions -->
+        <div class="gmaps-card-actions">
+          <button class="btn-gmaps-action" onclick="simulateFullRide()">
+            <span>🚗</span> Preview 3D Car Ride
+          </button>
+          <button class="btn-gmaps-action" onclick="openShareRouteModal()">
+            <span>🔗</span> Share Link
+          </button>
+        </div>
+      </div>
+
+      <!-- SUPERADMIN STUDIO VIEW (Clean, Spacious & Direct) -->
+      <div id="superAdminViewContainer" class="hidden">
+        <!-- Tab bar (NEW) -->
+        <div class="admin-tabs">
+          <button id="adminTabStudio" class="admin-tab active" onclick="switchAdminTab('studio')">🗺️ Route Studio</button>
+          <button id="adminTabDashboard" class="admin-tab" onclick="switchAdminTab('dashboard')">📊 Command Center</button>
+        </div>
+
+        <!-- Existing route studio content wrapped -->
+        <div id="adminStudioContent">
+          <div class="admin-event-card-header">
+            <div class="admin-event-title-row">
+              <span class="admin-event-title" id="adminActiveEventTitle">🛡️ CYCLOTHON CORRIDOR STUDIO</span>
+              <span class="admin-event-tag">OFFICIAL PATH</span>
+            </div>
+            <p class="admin-event-sub">Design, Reroute & Manage High-Visibility Official Corridors</p>
+          </div>
+
+          <!-- SuperAdmin History Controls (Undo / Redo) -->
+          <div class="admin-history-bar">
+            <button class="btn-history" id="btnAdminUndo" onclick="undoRouteAction()" title="Undo Route Edit" disabled>↩️ Undo</button>
+            <button class="btn-history" id="btnAdminRedo" onclick="redoRouteAction()" title="Redo Route Edit" disabled>↪️ Redo</button>
+            <button class="btn-history" onclick="reset3DBearing()" title="Reset Camera to North">🧭 North Align</button>
+          </div>
+
+          <!-- SuperAdmin Direct Start & Destination Dialogue Box -->
+          <div class="admin-route-box">
+            <div class="admin-box-header">
+              <span class="admin-box-title">📍 OFFICIAL EVENT ROUTE ENDPOINTS</span>
+            </div>
+
+            <div class="gmaps-routing-inputs admin-routing-inputs">
+              <div class="connector-line-visual">
+                <span class="route-point start-dot"></span>
+                <span class="route-line-dots"></span>
+                <span class="route-point end-dot"></span>
+              </div>
+
+              <div class="inputs-column">
+                <!-- Admin Start Input -->
+                <div class="gmaps-input-field">
+                  <span class="input-tiny-label">START / ASSEMBLY POINT</span>
+                  <input type="text" id="adminOriginInput" placeholder="Enter official start point..." oninput="handleAdminOriginSearch(event)" onfocus="handleAdminOriginSearch(event)" />
+                  <div class="gmaps-live-dropdown" id="adminOriginDropdown"></div>
+                </div>
+
+                <!-- Admin Destination Input -->
+                <div class="gmaps-input-field">
+                  <span class="input-tiny-label">FINISH / DESTINATION LINE</span>
+                  <input type="text" id="adminDestInput" placeholder="Enter official finish line..." oninput="handleAdminDestSearch(event)" onfocus="handleAdminDestSearch(event)" />
+                  <div class="gmaps-live-dropdown" id="adminDestDropdown"></div>
+                </div>
+              </div>
+
+              <button class="gmaps-swap-btn" onclick="swapAdminLocations()" title="Swap event start and finish">
+                ⇅
+              </button>
+            </div>
+
+            <!-- Quick Hub Chips for SuperAdmin -->
+            <div class="quick-admin-chips-inline">
+              <button type="button" class="admin-chip-btn-sm" onclick="setAdminDirectQuickRoute('vnit', 'zeromile')">🏛️ VNIT ➔ Zero Mile</button>
+              <button type="button" class="admin-chip-btn-sm" onclick="setAdminDirectQuickRoute('zeromile', 'kasturchand')">🌳 Zero Mile ➔ Kasturchand</button>
+              <button type="button" class="admin-chip-btn-sm" onclick="setAdminDirectQuickRoute('aiims', 'sitabuldi')">🏥 AIIMS ➔ Sitabuldi</button>
+              <button type="button" class="admin-chip-btn-sm" onclick="setAdminDirectQuickRoute('futala', 'seminary')">🌊 Futala ➔ Seminary</button>
+            </div>
+          </div>
+
+          <!-- Single Official Path Metrics & Radium Distance Telemetry -->
+          <div class="admin-single-path-stats">
+            <div class="admin-stat-item highlight-radium">
+              <span class="stat-num radium-text" id="adminPathDist">-- km</span>
+              <span class="stat-label">Total Corridor</span>
+            </div>
+            <div class="admin-stat-divider"></div>
+            <div class="admin-stat-item">
+              <span class="stat-num" id="adminPathTime">-- min</span>
+              <span class="stat-label">Est. Race Time</span>
+            </div>
+            <div class="admin-stat-divider"></div>
+            <div class="admin-stat-item">
+              <span class="stat-num" id="adminCheckpointsCount">0</span>
+              <span class="stat-label">Checkpoints</span>
+            </div>
+          </div>
+
+          <!-- SuperAdmin Direct Action Buttons -->
+          <div class="admin-action-buttons-list">
+            <button class="btn-admin-action simulation-btn" id="btnAdminSimulateRace" onclick="toggleAdminRaceSimulation()">
+              <span>🚴</span> <span id="lblAdminSimulate">Start Live Participant Simulation</span>
+            </button>
+            <button class="btn-admin-action" id="btnAdminDragPath" onclick="toggleWaypointEditMode()">
+              <span>✏️</span> <span id="lblAdminDrag">Drag & Adjust Route Waypoints</span>
+            </button>
+            <button class="btn-admin-action" id="btnAdminBarricade" onclick="toggleRoadClosureMode()">
+              <span>🚧</span> <span id="lblAdminClosure">Drop Police Barricade & Detour</span>
+            </button>
+            <button class="btn-admin-action" onclick="openCheckpointDialog()">
+              <span>➕</span> Add Snapped Checkpoint
+            </button>
+            <button class="btn-admin-action alert" onclick="openSosBroadcastModal()">
+              <span>🚨</span> Broadcast Alert to Citizens
+            </button>
+            <button class="btn-admin-action save" onclick="saveAndPublishRoute()">
+              <span>🔒</span> Save & Lock Official Route
+            </button>
+          </div>
+        </div>
+
+        <!-- New dashboard content -->
+        <div id="adminDashboardContent" class="hidden">
+          <div class="cmd-center">
+
+            <!-- Hero Event Banner -->
+            <div class="cmd-event-hero" id="dashEventOverview">
+              <div class="cmd-hero-loading">Loading event data...</div>
+            </div>
+
+            <!-- Live Metrics Row -->
+            <div class="cmd-metrics-row" id="dashLiveStats">
+              <div class="cmd-metric-card">
+                <div class="cmd-metric-icon">📊</div>
+                <div class="cmd-metric-value" id="metricCheckIn">—</div>
+                <div class="cmd-metric-label">Checked In</div>
+                <div class="cmd-metric-bar"><div class="cmd-bar-fill" id="barCheckIn" style="width:0%"></div></div>
+              </div>
+              <div class="cmd-metric-card">
+                <div class="cmd-metric-icon">🏁</div>
+                <div class="cmd-metric-value" id="metricCompleted">—</div>
+                <div class="cmd-metric-label">Completed</div>
+                <div class="cmd-metric-bar"><div class="cmd-bar-fill green" id="barCompleted" style="width:0%"></div></div>
+              </div>
+              <div class="cmd-metric-card">
+                <div class="cmd-metric-icon">📶</div>
+                <div class="cmd-metric-value" id="metricGPS">—</div>
+                <div class="cmd-metric-label">Live GPS Feeds</div>
+              </div>
+              <div class="cmd-metric-card sos-metric" id="metricSOSCard">
+                <div class="cmd-metric-icon">🚨</div>
+                <div class="cmd-metric-value" id="metricSOS">0</div>
+                <div class="cmd-metric-label">Pending SOS</div>
+              </div>
+            </div>
+
+            <!-- Bottom Two Panels -->
+            <div class="cmd-bottom-panels">
+
+              <!-- Broadcast Center -->
+              <div class="cmd-panel">
+                <div class="cmd-panel-header">
+                  <h3>📢 Broadcast Center</h3>
+                </div>
+                <div class="cmd-panel-body">
+                  <div class="cmd-broadcast-compose">
+                    <textarea id="broadcastMessage" class="cmd-textarea" rows="3" placeholder="Type an announcement for participants..."></textarea>
+                    <div class="cmd-broadcast-actions">
+                      <select id="broadcastTarget" class="cmd-select">
+                        <option value="ALL">📣 All Participants</option>
+                      </select>
+                      <button class="cmd-btn-send" onclick="handleSendBroadcast()">Send ➔</button>
+                    </div>
+                  </div>
+                  <div class="cmd-divider"></div>
+                  <div class="cmd-panel-subtitle">Recent Broadcasts</div>
+                  <div class="cmd-scroll-list" id="dashRecentBroadcasts">
+                    <div class="cmd-empty-state">No broadcasts yet</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SOS Command Panel -->
+              <div class="cmd-panel">
+                <div class="cmd-panel-header">
+                  <h3>🚨 SOS Alerts</h3>
+                  <span class="cmd-sos-badge hidden" id="sosBadge">0</span>
+                </div>
+                <div class="cmd-panel-body">
+                  <div class="cmd-scroll-list" id="dashSosPanel">
+                    <div class="cmd-empty-state">✅ All clear — no active alerts</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating 3D Map Controls (Top-Right) -->
+    <div class="gmaps-top-right-controls">
+      <!-- Time-of-Day Lighting Controls (Mapbox Standard 3D) -->
+      <div class="map-lighting-pill">
+        <button class="time-btn" onclick="setTimeOfDay('dawn')" title="Dawn / Sunrise">🌅</button>
+        <button class="time-btn active" id="btnTimeDay" onclick="setTimeOfDay('day')" title="Day / Sun">☀️</button>
+        <button class="time-btn" onclick="setTimeOfDay('dusk')" title="Dusk / Sunset">🌇</button>
+        <button class="time-btn" id="btnTimeNight" onclick="setTimeOfDay('night')" title="Night / Dark Cyberpunk">🌙</button>
+      </div>
+
+      <button class="gmaps-control-btn btn-locate-me" id="btnLocateMe" onclick="centerOnUserGpsLocation()" title="Locate My Live GPS Position on Map">
+        📍 <span class="locate-text">Locate Me</span>
+      </button>
+
+      <button class="gmaps-control-btn" id="btnLiveMobilityRadar" onclick="toggleLiveMobilityRadar()" title="Toggle Live Participant Mobility Radar & Peloton Stream">
+        🚴 Radar: <b id="radarStatusLabel">OFF</b>
+      </button>
+      <button class="gmaps-control-btn active" id="btn3DTiltToggle" onclick="toggle3DPerspective()" title="Toggle True 3D Isometric Buildings & Terrain">
+        🏙️ 3D Tilt: <b id="tiltStatusLabel">ON</b>
+      </button>
+      <button class="gmaps-control-btn" id="btnOrbitToggle" onclick="toggle3DOrbit()" title="360° Camera Auto-Orbit">
+        🔄 3D Orbit
+      </button>
+    </div>
+
+    <!-- SuperAdmin Live Follow-Cam Chase HUD Overlay -->
+    <div id="adminFollowCamHud" class="admin-follow-cam-hud hidden">
+      <div class="follow-cam-pulse">🎥</div>
+      <div class="follow-cam-info">
+        <div class="follow-cam-title" id="followCamRiderName">TRACKING: Lead Peloton (Rider #101)</div>
+        <div class="follow-cam-meta" id="followCamRiderMeta">Speed: 28.4 km/h • 4.2 km completed</div>
+      </div>
+      <button class="btn-stop-follow-cam" onclick="stopFollowingParticipant()" title="Release Camera">✕ Release Camera</button>
+    </div>
+
+    <!-- Live Multi-Color Traffic Legend (Bottom-Right) -->
+    <div class="gmaps-traffic-legend">
+      <span class="legend-title">LIVE TRAFFIC FLOW:</span>
+      <div class="legend-items">
+        <div class="leg-item"><span class="color-bar c-green"></span> Fast (>40 km/h)</div>
+        <div class="leg-item"><span class="color-bar c-yellow"></span> Moderate (25-40)</div>
+        <div class="leg-item"><span class="color-bar c-orange"></span> Slow (15-25)</div>
+        <div class="leg-item"><span class="color-bar c-red"></span> Roadblock (<15)</div>
+      </div>
+    </div>
+
+    <!-- Main Fullscreen 3D Map Container -->
+    <div id="map"></div>
+
+    <!-- Active Event Conflict Alert Card on Map -->
+    <div id="eventConflictCard" class="event-conflict-card hidden">
+      <div class="conflict-header">
+        <div class="conflict-badge-box">
+          <span class="conflict-icon">⚠️</span>
+          <span class="conflict-badge" id="conflictEventName">ACTIVE EVENT DETECTED: NAGPUR GRAND CYCLOTHON</span>
+        </div>
+        <button class="conflict-close-btn" onclick="dismissConflictCard()">✕</button>
+      </div>
+      <div class="conflict-body">
+        <div class="conflict-metric-row">
+          <div class="delay-pill" id="conflictDelayPill">
+            <span class="delay-val">+20 min</span>
+            <span class="delay-lbl">Event Congestion</span>
+          </div>
+          <div class="conflict-desc-box">
+            <p id="conflictDescText">Your direct route passes through the active Cyclothon corridor on Wardha Road. Rolling barricades are in effect.</p>
+          </div>
+        </div>
+        <button class="btn-take-alternate" onclick="selectRouteOption('alt2')">
+          <span>✨ Switch to Alternate Bypass (Saves 20 mins)</span> ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Turn-by-Turn Navigation Header Banner -->
+    <div id="navBanner" class="nav-direction-banner hidden">
+      <div class="nav-banner-left">
+        <div class="nav-arrow-box" id="navArrowBox">↱</div>
+        <div class="nav-dist-label" id="navDistLabel">390 m</div>
+      </div>
+      <div class="nav-banner-center">
+        <div class="nav-street-name" id="navStreetName">Wardha Road Expressway</div>
+        <div class="nav-sub-instruction" id="navSubInstruction">Turn right at Shankar Nagar Square towards Zero Mile</div>
+      </div>
+      <button class="nav-exit-btn" onclick="stopNavigation()" title="Exit Navigation">✕</button>
+    </div>
+
+    <!-- Live Telemetry HUD Bar during 3D Navigation -->
+    <div id="navTelemetryHud" class="nav-telemetry-hud hidden">
+      <div class="hud-item speed-box">
+        <div class="speed-ring">
+          <span class="speed-limit">50</span>
+          <span class="current-speed" id="hudSpeed">48</span>
+        </div>
+        <span class="speed-unit">km/h</span>
+      </div>
+
+      <div class="hud-item">
+        <span class="hud-val" id="hudEta">16:34</span>
+        <span class="hud-lbl">Arrival Clock</span>
+      </div>
+
+      <div class="hud-divider"></div>
+
+      <div class="hud-item">
+        <span class="hud-val" id="hudRemainDist">6.1 km</span>
+        <span class="hud-lbl">Remaining</span>
+      </div>
+
+      <div class="hud-divider"></div>
+
+      <div class="hud-item">
+        <span class="hud-val" id="hudRemainTime">18 min</span>
+        <span class="hud-lbl">Est. Time</span>
+      </div>
+    </div>
+
+
+
+
+
+    <!-- ========================================================================= -->
+    <!-- ADD CHECKPOINT DIALOG (For SuperAdmin)                                    -->
+    <!-- ========================================================================= -->
+    <div id="checkpointModal" class="modal-overlay">
+      <div class="sos-dialog">
+        <button class="modal-close-btn" onclick="closeCheckpointDialog()">✕</button>
+        
+        <div class="sos-header">
+          <div class="sos-icon-pulse">📍</div>
+          <h2>Add Official Event Checkpoint</h2>
+          <p>Drop a monitored station along the active corridor for runners, cyclists or marshals.</p>
+        </div>
+
+        <div class="sos-form">
+          <div class="form-group">
+            <label>CHECKPOINT TYPE</label>
+            <select id="cpType">
+              <option value="hydration">💧 Hydration / Water Station</option>
+              <option value="medical">🏥 First Aid / Medical Station</option>
+              <option value="timing">⏱️ Timing Mat / RFID Checkpoint</option>
+              <option value="barricade">🚧 Police Traffic Barricade</option>
+              <option value="flagoff">🚩 Flag-Off / Assembly Point</option>
+              <option value="finish">🏁 Finish Line Pavilion</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>CHECKPOINT NAME / LANDMARK</label>
+            <input type="text" id="cpName" placeholder="e.g. Shankar Nagar Hydration Post #2" value="Shankar Nagar Hydration Post" />
+          </div>
+
+          <div class="form-group">
+            <label>OPERATIONAL NOTES</label>
+            <textarea id="cpNotes" rows="2" placeholder="e.g. 500 Energy drinks ready. 2 ambulance marshals stationed.">200 Energy drinks ready. 2 marshals stationed.</textarea>
+          </div>
+
+          <div class="sos-actions">
+            <button class="btn btn-secondary" onclick="closeCheckpointDialog()">Cancel</button>
+            <button class="btn btn-primary" onclick="activateCheckpointPlacement()">
+              <span>📍</span> Place on 3D Map
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- SUPERADMIN START & DESTINATION LOCATION DIALOGUE MODAL                    -->
+    <!-- ========================================================================= -->
+    <div id="adminLocationModal" class="modal-overlay">
+      <div class="sos-dialog admin-loc-dialog">
+        <button class="modal-close-btn" onclick="closeAdminLocationModal()">✕</button>
+        
+        <div class="sos-header">
+          <div class="sos-icon-pulse">📍</div>
+          <h2>Configure Event Start & Finish Points</h2>
+          <p>Set official flag-off and finish coordinates with real-time road snapping.</p>
+        </div>
+
+        <div class="sos-form">
+          <!-- Start Point Input -->
+          <div class="form-group">
+            <label>🏁 EVENT START / ASSEMBLY POINT</label>
+            <div class="admin-input-wrap">
+              <input type="text" id="adminModalOriginInput" placeholder="Search Nagpur start point..." oninput="handleAdminModalOriginSearch(event)" />
+              <div class="gmaps-live-dropdown" id="adminModalOriginDropdown"></div>
+            </div>
+          </div>
+
+          <!-- Destination Point Input -->
+          <div class="form-group">
+            <label>🏆 EVENT FINISH / DESTINATION LINE</label>
+            <div class="admin-input-wrap">
+              <input type="text" id="adminModalDestInput" placeholder="Search Nagpur finish line..." oninput="handleAdminModalDestSearch(event)" />
+              <div class="gmaps-live-dropdown" id="adminModalDestDropdown"></div>
+            </div>
+          </div>
+
+          <!-- Quick Hub Chips -->
+          <div class="quick-admin-chips">
+            <span class="chip-title">Quick Select Official Nodes:</span>
+            <div class="chips-row">
+              <button type="button" class="admin-chip-btn" onclick="setAdminQuickRoute('vnit', 'zeromile')">🏛️ VNIT ➔ Zero Mile</button>
+              <button type="button" class="admin-chip-btn" onclick="setAdminQuickRoute('zeromile', 'kasturchand')">🌳 Zero Mile ➔ Kasturchand</button>
+              <button type="button" class="admin-chip-btn" onclick="setAdminQuickRoute('aiims', 'sitabuldi')">🏥 AIIMS ➔ Sitabuldi</button>
+              <button type="button" class="admin-chip-btn" onclick="setAdminQuickRoute('futala', 'seminary')">🌊 Futala ➔ Seminary Hills</button>
+            </div>
+          </div>
+
+          <div class="sos-actions">
+            <button class="btn btn-secondary" onclick="closeAdminLocationModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="applyAdminModalLocations()">
+              <span>⚡</span> Apply & Recalculate Route
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SOS BROADCAST MODAL (For SuperAdmin)                                      -->
+    <!-- ========================================================================= -->
+    <div id="sosModal" class="modal-overlay">
+      <div class="sos-dialog">
+        <button class="modal-close-btn" onclick="closeSosModal()">✕</button>
+        
+        <div class="sos-header">
+          <div class="sos-icon-pulse">🚨</div>
+          <h2 id="sosModalTitle">Broadcast Civic Alert to Commuters</h2>
+          <p>Instantly alert connected commuters and citizens about rolling closures, diversions or emergencies.</p>
+        </div>
+
+        <div class="sos-form">
+          <div class="form-group">
+            <label>ALERT SEVERITY</label>
+            <select id="sosSeverity">
+              <option value="EMERGENCY">🔴 CRITICAL ALERT (Immediate Diversion)</option>
+              <option value="WARNING">🟡 TRAFFIC NOTICE (Heavy Rally Congestion)</option>
+              <option value="INFO">🟢 CIVIC ADVISORY (Route Cleared / Normal Flow)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>AFFECTED CORRIDOR / ROAD</label>
+            <input type="text" id="sosLocation" placeholder="e.g. Wardha Road / Shankar Nagar Square" value="Wardha Road & Shankar Nagar Sq" />
+          </div>
+
+          <div class="form-group">
+            <label>BROADCAST MESSAGE</label>
+            <textarea id="sosMessage" rows="3" placeholder="Enter instructions for commuters...">Nagpur Grand Cyclothon is passing through Shankar Nagar Square. Commuters please switch to Alternate Route (Ambazari & Civil Lines bypass).</textarea>
+          </div>
+
+          <div class="sos-actions">
+            <button class="btn btn-secondary" onclick="closeSosModal()">Cancel</button>
+            <button class="btn btn-danger-sos" onclick="dispatchSosAlert()">
+              <span>🚨</span> Send Citywide Broadcast
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- COMMUTER LIVE SOS ALERT BANNER (Pops up with chime)                       -->
+    <!-- ========================================================================= -->
+    <div id="commuterAlertBanner" class="commuter-alert-banner hidden">
+      <div class="alert-pulse-icon">🚨</div>
+      <div class="alert-content">
+        <div class="alert-title-row">
+          <span class="alert-badge" id="bannerBadge">HIGH PRIORITY CIVIC ALERT</span>
+          <span class="alert-time" id="bannerTime">Just Now</span>
+        </div>
+        <div class="alert-headline" id="bannerHeadline">Emergency Corridor Active at Shankar Nagar</div>
+        <p class="alert-msg" id="bannerMessage">Please take the recommended Alternate Bypass to avoid rally delays.</p>
+      </div>
+      <button class="alert-dismiss-btn" onclick="dismissCommuterAlert()">Dismiss</button>
+    </div>
+
+  </div>
+
+  <!-- Global Runtime & Environment Configuration -->
+  <script src="config.js"></script>
+
+  <!-- Supabase JS Client (Direct, Zero ORM) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+
+  <!-- Master Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>

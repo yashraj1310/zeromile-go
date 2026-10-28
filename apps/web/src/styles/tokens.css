@@ -1,0 +1,39 @@
+/**
+ * =========================================================================
+ * ZEROMILE GO - DESIGN TOKENS (tokens.css)
+ * Luxury Obsidian, Electric Gold, Cyan & Emerald Glassmorphism
+ * =========================================================================
+ */
+
+:root {
+  --bg-deep: #050811;
+  --bg-elevated: #0a0f1d;
+  --bg-surface: #10182b;
+  --bg-surface-glass: rgba(16, 24, 43, 0.75);
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(255, 255, 255, 0.16);
+  --border-gold: rgba(255, 215, 0, 0.4);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --gold-primary: #ffd700;
+  --gold-glow: rgba(255, 215, 0, 0.35);
+  --cyan-primary: #00f2fe;
+  --emerald-primary: #00e676;
+  --amber-primary: #ff9100;
+  --red-emergency: #ff1744;
+  --purple-royal: #7c4dff;
+  --blue-police: #2979ff;
+  
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  --shadow-neon-gold: 0 0 20px rgba(255, 215, 0, 0.35);
+  --shadow-neon-cyan: 0 0 20px rgba(0, 242, 254, 0.35);
+}
